@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import sys
 import yaml
 from job_creation import *
 
@@ -7,7 +8,8 @@ import pprint
 from pprint import pprint as P
 
 ## read yaml file
-with open('test.yaml', "r") as f:
+file_name = sys.argv[1]
+with open(file_name, "r") as f:
     dataMap = yaml.safe_load(f)
 
 ## get collections
