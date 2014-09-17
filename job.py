@@ -57,6 +57,7 @@ class rsync_job(job):
 
 
 def run_jobs(job_list):
+    """runs all jobs in a given list"""
     job_list.sort()
 
     host=None

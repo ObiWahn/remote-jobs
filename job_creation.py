@@ -5,6 +5,7 @@ import pprint
 from pprint import pprint as P
 
 def get_job_info(default_dict, user_data_dict):
+    """Merges info from defaults and user entry"""
     defaults={
             'type' : None,
             'home' : '/home/{user}',
@@ -39,6 +40,7 @@ def get_job_info(default_dict, user_data_dict):
 
 
 def build_rsync_jobs(host, user, job_dict):
+    """Creates job instances"""
     jobs=[]
 
     for file_pair in job_dict['files']:
@@ -83,7 +85,16 @@ def build_jobs(host_list, user_list, job_dict, collections):
             jobs += rv
     return jobs
 
-def create_jobs(collections, dataMap):
+def create_jobs(dataMap):
+    """Create Job list form yaml map"""
+
+    ## get collections
+    collections=None
+    if 'collections' in dataMap:
+        collections=dataMap['collections']
+    else:
+        print("no collections defined")
+
     jobs=[]
     if 'hosts' not in dataMap:
         print("no hosts defined!")
