@@ -1,22 +1,39 @@
 #!/usr/bin/python3
-from job import *
-
 import pprint
 from pprint import pprint as P
+from job import *
+import logging
+logger = logging.getLogger('remote-jobs')
+
+def map_name(from_, to_, *dicts_):
+    """ maps from name to name in a list of dictionaries """
+    for d in dicts_:
+        if from_ in d:
+            d[to_]=d[from_]
 
 def get_job_info(default_dict, user_data_dict):
     """Merges info from defaults and user entry"""
     defaults={
-            'type' : None,
-            'home' : '/home/{user}',
-            'rsync_flag': ['-avh'],
-            'files' : None,
-            'collections' : None
+            'type'        : None,
+            'rsync_flag'  : ['-avh'],
+            'files'       : None,
+            'collections' : None,
+            'luser'       : None,
+            'ruser'       : None,
+            'lhome'       : '/home/{user}',
+            'rhome'       : '/home/{user}',
+            'lhost'       : None,
+            'rhost'       : None
         }
     result=dict()
 
+    my_map_name=lambda from_, to_: map_name(from_, to_, default_dict, user_data_dict)
+    my_map_name('home','lhome')
+    my_map_name('host','rhost')
+
     #merge
-    for item in ['type','home','rsync_flags']:
+    for item in ['type', 'home', 'rsync_flags',
+                 'lhost', 'rhost', 'luser', 'ruser', 'lhome', 'rhome']:
         if item in default_dict:
             result[item]=default_dict[item]
         if item in user_data_dict:
@@ -41,15 +58,17 @@ def get_job_info(default_dict, user_data_dict):
 
 def build_rsync_jobs(host, user, job_dict):
     """Creates job instances"""
+    logger.debug(job_dict)
+
     jobs=[]
 
     for file_pair in job_dict['files']:
         jobs.append(
             rsync_job(
                 luser = user, ruser = user,
-                lhost = None, rhost = host,
-                lhome = job_dict['home'], rhome = None,
-                src   = file_pair[0], dest = file_pair[1] ,
+                lhost = job_dict['lhost'], rhost = host,
+                lhome = job_dict['lhome'], rhome = job_dict['rhome'],
+                src   = file_pair[0],      dest = file_pair[1] ,
                 flags = job_dict['rsync_flags']
             )
         )
@@ -76,7 +95,7 @@ def build_jobs(host_list, user_list, job_dict, collections):
     if job_dict['type'] == 'rsync':
         fun=build_rsync_jobs
     else:
-        print ("no valid operation type")
+        logger.error("no valid operation type")
 
     ## run creation function for ever host user pair
     for host in host_list:
@@ -93,11 +112,11 @@ def create_jobs(dataMap):
     if 'collections' in dataMap:
         collections=dataMap['collections']
     else:
-        print("no collections defined")
+        logger.info("no collections defined")
 
     jobs=[]
     if 'hosts' not in dataMap:
-        print("no hosts defined!")
+        logger.error("no hosts defined!")
     else:
         for hosts_key, hosts_val in dataMap['hosts'].items():
             host_list=hosts_key.split(',')
@@ -106,7 +125,7 @@ def create_jobs(dataMap):
             if 'default' in hosts_val:
                 default=hosts_val['default']
             else:
-                print("defaults missing")
+                logger.info("defaults missing")
 
             if 'users' in hosts_val:
                 for users_key,users_val in hosts_val['users'].items():
@@ -115,5 +134,5 @@ def create_jobs(dataMap):
                     job_list=build_jobs(host_list, user_list, job_dict, collections)
                     jobs += job_list
             else:
-                print("no users given")
+                logger.error("no users given")
     return jobs

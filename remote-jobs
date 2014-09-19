@@ -1,11 +1,14 @@
 #!/usr/bin/python3
-
 import sys
 import yaml
-from job_creation import *
-
+import logging
 import pprint
 from pprint import pprint as P
+from job_creation import *
+
+logger = logging.getLogger('remote-jobs')
+logger.setLevel(logging.INFO)
+
 
 if len(sys.argv) > 1:
     file_name = sys.argv[1]
@@ -14,6 +17,7 @@ else:
 
 with open(file_name, "r") as f:
     dataMap = yaml.safe_load(f)
+    logging.debug(pprint.pformat(dataMap))
 
 jobs = create_jobs(dataMap)
 run_jobs(jobs)

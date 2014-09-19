@@ -1,16 +1,39 @@
 #!/usr/bin/python3
+import subprocess
 import pprint
 from pprint import pprint as P
+import logging
+logger = logging.getLogger('remote-jobs')
 
 class job(object):
-    def __init__(self,luser, ruser, lhost, rhost, lhome, rhome):
+    """
+    Basic job
+
+    Most of our jobs will require information about
+    local and remote users!
+
+    If no local user is given it will default to the
+    remote ueser.
+    """
+    def __init__(self, 
+        luser, ruser,
+        lhost, rhost,
+        lhome, rhome
+        ):
         self.luser=luser
         self.ruser=ruser
-        self.lhost=ruser
+        self.lhost=rhost
         self.rhost=rhost
         self.lhome=lhome
         self.rhome=rhome
+        self.local_mode=False
         self.type=None
+
+        if lhost == rhost:
+            self.local_mode=True
+
+        if not luser:
+            self.luser=ruser
 
     def __lt__(self,other):
         t1 = self.rhost, self.ruser
@@ -24,12 +47,13 @@ class job(object):
 
     def execute(self):
         cmd = self.get_command()
-        print(" ".join(cmd))
+        logger.debug(" ".join(cmd))
 
     def get_command(self):
         return ["not implemented"]
 
     def expand_vars(self, string, remote = False):
+        """Expand Variables - Ugly Code - TODO"""
         if remote:
             user=self.ruser
             home=self.rhome
@@ -42,7 +66,10 @@ class job(object):
         return s2
 
 class rsync_job(job):
-    def __init__(self, luser, ruser, lhost, rhost, lhome, rhome, src=None, dest=None, flags=['-avh']):
+    def __init__(self,
+        luser, ruser, lhost, rhost, lhome, rhome,
+        src=None, dest=None, flags=['-avh']
+        ):
         super().__init__(luser, ruser, lhost, rhost, lhome, rhome)
         self.type="rsync"
         self.src=self.expand_vars(src, remote = False)
@@ -50,11 +77,10 @@ class rsync_job(job):
         self.flags=flags
 
     def get_command(self):
-        cmd =  [ 'rsyc' ]
-        cmd +=  self.flags
+        cmd  = [ 'rsyc' ]
+        cmd += self.flags
         cmd += [ self.src, self.ruser + "@" + self.rhost + ":" + self.dest ]
         return cmd
-
 
 def run_jobs(job_list):
     """runs all jobs in a given list"""
@@ -64,5 +90,5 @@ def run_jobs(job_list):
     for j in job_list:
         if j.rhost != host:
             host=j.rhost
-            print("HOST: {host}".format(host=host))
+            logger.debug("HOST: {host}".format(host=host))
         j.execute()
