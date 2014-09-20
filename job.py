@@ -1,9 +1,9 @@
 #!/usr/bin/python3
-import subprocess
 import pprint
 from pprint import pprint as P
 import logging
 logger = logging.getLogger('remote-jobs')
+import subprocess
 
 class job(object):
     """
@@ -15,7 +15,7 @@ class job(object):
     If no local user is given it will default to the
     remote ueser.
     """
-    def __init__(self, 
+    def __init__(self,
         luser, ruser,
         lhost, rhost,
         lhome, rhome
@@ -28,6 +28,7 @@ class job(object):
         self.rhome=rhome
         self.local_mode=False
         self.type=None
+        self.failed=False
 
         if lhost == rhost:
             self.local_mode=True
@@ -47,7 +48,19 @@ class job(object):
 
     def execute(self):
         cmd = self.get_command()
-        logger.debug(" ".join(cmd))
+        logger.info(" ".join(cmd))
+        try:
+            subprocess.check_output(cmd)
+        except subprocess.CalledProcessError as e:
+            self.failed=True
+            logger.error("Failed to execute - there is probably a misconfiguration in the yaml\n")
+        except Exception as e:
+            self.failed=True
+            logger.error("Serious Unknown Error - Report to Developer")
+
+    def get_command_string(self):
+        cmd = self.get_command()
+        return " ".join(cmd)
 
     def get_command(self):
         return ["not implemented"]
@@ -77,7 +90,7 @@ class rsync_job(job):
         self.flags=flags
 
     def get_command(self):
-        cmd  = [ 'rsyc' ]
+        cmd  = [ 'rsync' ]
         cmd += self.flags
         cmd += [ self.src, self.ruser + "@" + self.rhost + ":" + self.dest ]
         return cmd
@@ -92,3 +105,9 @@ def run_jobs(job_list):
             host=j.rhost
             logger.debug("HOST: {host}".format(host=host))
         j.execute()
+
+    print("The following jobs failed to execute:")
+    for j in job_list:
+        if j.failed:
+            print(j.get_command_string())
+

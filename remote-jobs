@@ -2,11 +2,18 @@
 import sys
 import yaml
 import logging
+import colored_log
 import pprint
 from pprint import pprint as P
 from job_creation import *
 
+handler = logging.StreamHandler()
+handler.setFormatter(
+    colored_log.ColorFormatter(colored_log.DEFAULT_FMT)
+    )
+
 logger = logging.getLogger('remote-jobs')
+#logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 
