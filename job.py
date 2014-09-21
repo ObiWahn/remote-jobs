@@ -45,7 +45,7 @@ class job(object):
         t2 = other.rhost, other.ruser
         return t1 < t2
 
-    def __eq__(self,ohter):
+    def __eq__(self,other):
         t1 = self.rhost, self.ruser
         t2 = other.rhost, other.ruser
         return t1 == t2
@@ -126,10 +126,11 @@ class rsync_job(remote_job_with_src_dest):
 
 def test_connection(j):
     cmd=None
-    if j in ['rsync']:
+    if j.type in ['rsync']:
         cmd=['ssh', '-o', 'ConnectionAttempts=1',
                     '-o', 'ConnectTimeout=1',
-                    j.ruser + '@' + j.rhost
+                    j.ruser + '@' + j.rhost,
+                    'echo' ,'Connected to ' + j.rhost
             ]
 
     if cmd:
@@ -148,7 +149,7 @@ def run_jobs(job_list):
         if j.rhost != host:
             host=j.rhost
             logger.debug("HOST: {host}".format(host=host))
-            connection=test_connection(job)
+            connection=test_connection(j)
 
         if not j.hold and connection:
             j.execute()
