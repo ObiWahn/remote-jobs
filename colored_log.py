@@ -5,13 +5,14 @@ import logging
 
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
 
-DEFAULT_FMT =  ("[$BOLD%(name)-20s$RESET][$BOLD$COLOR%(levelname)-18s$RESET]  "
+#DEFAULT_FMT =  ("[$BOLD%(name)-20s$RESET][$BOLD$COLOR%(levelname)-8s$RESET] "
+DEFAULT_FMT =  ("[$BOLD%(name)s$RESET][$BOLD$COLOR%(levelname)-5s$RESET] "
                 "%(message)s "
                 "($BOLD%(filename)s$RESET:%(lineno)d)")
 
 COLORS = {
     'WARNING'  : YELLOW,
-    'INFO'     : WHITE,
+    'INFO'     : GREEN,
     'DEBUG'    : BLUE,
     'CRITICAL' : YELLOW,
     'ERROR'    : RED,
@@ -31,8 +32,6 @@ BOLD_SEQ  = "\033[1m"
 class ColorFormatter(logging.Formatter):
 
     def __init__(self, *args, **kwargs):
-        # can't do super(...) here because Formatter is an old school class
-        #logging.Formatter.__init__(self, *args, **kwargs)
         super().__init__(*args, **kwargs)
 
     def format(self, record):

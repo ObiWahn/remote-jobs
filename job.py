@@ -53,7 +53,7 @@ class job(object):
             subprocess.check_output(cmd)
         except subprocess.CalledProcessError as e:
             self.failed=True
-            logger.error("Failed to execute - there is probably a misconfiguration in the yaml\n")
+            logger.error("Failed to execute - there is probably a misconfiguration in the yaml")
         except Exception as e:
             self.failed=True
             logger.error("Serious Unknown Error - Report to Developer")
