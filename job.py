@@ -54,7 +54,8 @@ class job(object):
         cmd = self.get_command()
         logger.info(" ".join(cmd))
         try:
-            subprocess.check_output(cmd)
+            sub_out = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            print(sub_out)
         except subprocess.CalledProcessError as e:
             self.failed=True
             logger.error("Failed to execute - there is probably a misconfiguration in the yaml")
