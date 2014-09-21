@@ -55,13 +55,15 @@ class job(object):
         logger.info(" ".join(cmd))
         try:
             sub_out = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-            print(sub_out)
+            print(sub_out.decode('utf-8'))
         except subprocess.CalledProcessError as e:
             self.failed=True
             logger.error("Failed to execute - there is probably a misconfiguration in the yaml")
+        #os and other error
         except Exception as e:
+            ## still continue on all other errors
             self.failed=True
-            logger.error("Serious Unknown Error - Report to Developer")
+            logger.exception("Serious Unknown Error - Report to Developer")
 
     def get_command_string(self):
         cmd = self.get_command()
