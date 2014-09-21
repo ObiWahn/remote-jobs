@@ -121,17 +121,33 @@ class rsync_job(remote_job_with_src_dest):
         cmd += [ self.ruser + "@" + self.rhost + ":" + self.dest ]
         return cmd
 
+def test_connection(j):
+    cmd=None
+    if j in ['rsync']:
+        cmd=['ssh', '-o', 'ConnectionAttempts=1',
+                    '-o', 'ConnectTimeout=1',
+                    j.ruser + '@' + j.rhost
+            ]
+
+    if cmd:
+        if subprocess.call(cmd) != 0:
+            return False
+
+    return True
+
 def run_jobs(job_list):
     """runs all jobs in a given list"""
     job_list.sort()
 
     host=None
+    connection=False
     for j in job_list:
         if j.rhost != host:
             host=j.rhost
             logger.debug("HOST: {host}".format(host=host))
+            connection=test_connection(job)
 
-        if not j.hold:
+        if not j.hold and connection:
             j.execute()
 
     failed_jobs=[]
