@@ -13,7 +13,7 @@ DEFAULT_FMT =  ("[$BOLD%(name)s$RESET][$BOLD$COLOR%(levelname)-5s$RESET] "
 COLORS = {
     'WARNING'  : YELLOW,
     'INFO'     : GREEN,
-    'DEBUG'    : BLUE,
+    'DEBUG'    : MAGENTA,
     'CRITICAL' : YELLOW,
     'ERROR'    : RED,
     'RED'      : RED,
