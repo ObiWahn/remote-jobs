@@ -23,7 +23,9 @@ def get_job_info(default_dict, user_data_dict):
             'lhome'       : '/home/{user}',
             'rhome'       : '/home/{user}',
             'lhost'       : None,
-            'rhost'       : None
+            'rhost'       : None,
+            'local'       : False,
+            'glob'        : False
         }
     result=dict()
 
@@ -32,7 +34,7 @@ def get_job_info(default_dict, user_data_dict):
     my_map_name('host','rhost')
 
     #merge
-    for item in ['type', 'home', 'rsync_flags',
+    for item in ['type', 'home', 'rsync_flags', 'local', 'glob',
                  'lhost', 'rhost', 'luser', 'ruser', 'lhome', 'rhome']:
         if item in default_dict:
             result[item]=default_dict[item]
@@ -49,9 +51,15 @@ def get_job_info(default_dict, user_data_dict):
                 result[item]=user_data_dict[item]
             else:
                 result[item]+=user_data_dict[item]
-
         if item not in result:
             result[item]=defaults[item]
+
+    #Translate Strings
+    for key, val in result.items():
+        if val in ['true', 'True', '1']:
+            result[key] = True
+        if val in ['false', 'False', '0']:
+            result[key] = False
 
     return result
 
@@ -67,11 +75,13 @@ def build_rsync_jobs(host, user, job_dict):
             luser = user
 
         jobs.append(
-            rsync_job(
+            RemoteJobRsync(
                 luser = luser, ruser = user,
                 lhost = job_dict['lhost'], rhost = host,
                 lhome = job_dict['lhome'], rhome = job_dict['rhome'],
-                src   = file_pair[0],      dest = file_pair[1] ,
+                local = job_dict['local'],
+                src   = file_pair[0],      dest = file_pair[1],
+                glob  = job_dict['glob'],
                 flags = job_dict['rsync_flags']
             )
         )

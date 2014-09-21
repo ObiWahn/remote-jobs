@@ -19,6 +19,9 @@ logger.addHandler(handler)
 logger.propagate=False
 
 
+## argparse here
+
+
 if len(sys.argv) > 1:
     file_name = sys.argv[1]
 else:

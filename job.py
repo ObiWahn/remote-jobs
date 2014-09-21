@@ -2,13 +2,14 @@
 import subprocess
 import logging
 import glob
+import os
 
 logger = logging.getLogger('remote-jobs')
 
 import pprint
 from pprint import pprint as P
 
-class job(object):
+class RemoteJob(object):
     """
     Basic job
 
@@ -21,7 +22,8 @@ class job(object):
     def __init__(self,
         luser, ruser,
         lhost, rhost,
-        lhome, rhome
+        lhome, rhome,
+        local
         ):
         self.luser=luser
         self.ruser=ruser
@@ -29,13 +31,13 @@ class job(object):
         self.rhost=rhost
         self.lhome=lhome
         self.rhome=rhome
-        self.local_mode=False
+        self.local=local
         self.type=None
         self.failed=False
         self.hold=False
 
         if lhost == rhost:
-            self.local_mode=True
+            self.local=True
 
         if not luser:
             self.luser=ruser
@@ -53,17 +55,19 @@ class job(object):
     def execute(self):
         cmd = self.get_command()
         logger.info(" ".join(cmd))
-        try:
-            sub_out = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-            print(sub_out.decode('utf-8'))
-        except subprocess.CalledProcessError as e:
-            self.failed=True
-            logger.error("Failed to execute - there is probably a misconfiguration in the yaml")
-        #os and other error
-        except Exception as e:
-            ## still continue on all other errors
-            self.failed=True
-            logger.exception("Serious Unknown Error - Report to Developer")
+        if 'DEBUG' not in os.environ:
+            try:
+                sub_out = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+                if len(sub_out) >= 1:
+                    print(sub_out.decode('utf-8'))
+            except subprocess.CalledProcessError as e:
+                self.failed=True
+                logger.error("Failed to execute - there is probably a misconfiguration in the yaml")
+            #os and other error
+            except Exception as e:
+                ## still continue on all other errors
+                self.failed=True
+                logger.exception("Serious Unknown Error - Report to Developer")
 
     def get_command_string(self):
         cmd = self.get_command()
@@ -85,17 +89,21 @@ class job(object):
         s2 = s1.format( user=self.luser )
         return s2
 
-class remote_job_with_src_dest(job):
+class RemoteJobSrcDest(RemoteJob):
     def __init__(self,
-        luser, ruser, lhost, rhost, lhome, rhome,
-        src=None, dest=None
+        luser, ruser, lhost, rhost, lhome, rhome, local,
+        src=None, dest=None, glob=False
         ):
-        super().__init__(luser, ruser, lhost, rhost, lhome, rhome)
+        super().__init__(luser, ruser, lhost, rhost, lhome, rhome, local)
 
-        src=self.expand_vars(src, remote = False)
-        dest=self.expand_vars(dest, remote = True)
-        self.src=self.expand_glob(src)
-        self.dest=dest
+        self.src  = self.expand_vars(src, remote = False)
+        self.dest = self.expand_vars(dest, remote = True)
+        self.glob = glob
+
+        if glob:
+            self.src = self.expand_glob(src)
+        else:
+            self.src = [self.src]
 
     def expand_glob(self, path):
         logger.debug(path)
@@ -103,12 +111,37 @@ class remote_job_with_src_dest(job):
         logger.debug(pprint.pformat(rv))
         return rv
 
-class rsync_job(remote_job_with_src_dest):
+class RemoteJobRdiff(RemoteJobSrcDest):
     def __init__(self,
-        luser, ruser, lhost, rhost, lhome, rhome,
-        src=None, dest=None, flags=['-avh']
+            luser, ruser, lhost, rhost, lhome, rhome, local,
+            src=None, dest=None, glob=False, flags=['-v']
         ):
-        super().__init__(luser, ruser, lhost, rhost, lhome, rhome, src, dest)
+        super().__init__(
+            luser, ruser, lhost, rhost, lhome, rhome, local, 
+            src, dest, glob)
+        self.type="rdiff"
+        self.flags=flags
+
+        if not self.src:
+            logger.error("Source files could not be found: " + self.expand_vars(src))
+            logger.error(self.get_command_string())
+            self.hold=True
+
+    def get_command(self):
+        if self.local:
+            cmd  = [ 'rsync' ]
+        else:
+            cmd  = [ 'rsync' ]
+        return cmd
+
+class RemoteJobRsync(RemoteJobSrcDest):
+    def __init__(self,
+            luser, ruser, lhost, rhost, lhome, rhome, local,
+            src=None, dest=None, glob=True, flags=['-avh']
+        ):
+        super().__init__(
+            luser, ruser, lhost, rhost, lhome, rhome, local,
+            src, dest, glob)
         self.type="rsync"
         self.flags=flags
 
@@ -118,19 +151,26 @@ class rsync_job(remote_job_with_src_dest):
             self.hold=True
 
     def get_command(self):
-        cmd  = [ 'rsync' ]
-        cmd += self.flags
-        cmd += self.src
-        cmd += [ self.ruser + "@" + self.rhost + ":" + self.dest ]
+        if self.local:
+            cmd  = [ 'rsync' ]
+            cmd += self.flags
+            cmd += self.src
+            cmd += [ self.dest ]
+        else:
+            cmd  = [ 'rsync' ]
+            cmd += self.flags
+            cmd += self.src
+            cmd += [ self.ruser + "@" + self.rhost + ":" + self.dest ]
         return cmd
 
 def test_connection(j):
     cmd=None
     if j.type in ['rsync']:
-        cmd=['ssh', '-o', 'ConnectionAttempts=1',
-                    '-o', 'ConnectTimeout=1',
-                    j.ruser + '@' + j.rhost,
-                    'echo' ,'Connected to ' + j.rhost
+        cmd=['ssh',
+             '-o', 'ConnectionAttempts=1',
+             '-o', 'ConnectTimeout=1',
+             j.ruser + '@' + j.rhost,
+             'echo' ,'Connected to ' + j.rhost
             ]
 
     if cmd:
@@ -145,21 +185,21 @@ def run_jobs(job_list):
 
     host=None
     connection=False
-    for j in job_list:
-        if j.rhost != host:
-            host=j.rhost
+    for job in job_list:
+        if job.rhost != host:
+            host=job.rhost
             logger.debug("HOST: {host}".format(host=host))
-            connection=test_connection(j)
+            connection=test_connection(job)
 
-        if not j.hold and connection:
-            j.execute()
+        if not job.hold and ( connection or job.local):
+            job.execute()
 
     failed_jobs=[]
-    for j in job_list:
-        if j.failed:
-            failed_jobs.append(j.get_command_string())
+    for job in job_list:
+        if job.failed:
+            failed_jobs.append(job.get_command_string())
 
     if failed_jobs:
         print("The following jobs failed to execute:")
-        for j in failed_jobs:
-            print(j)
+        for job in failed_jobs:
+            print(job)
