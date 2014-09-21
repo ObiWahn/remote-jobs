@@ -1,5 +1,7 @@
 #!/usr/bin/python
+# Taken from:
 # http://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
+# and modified because it did not work :P
 
 import logging
 
@@ -48,4 +50,3 @@ class ColorFormatter(logging.Formatter):
         return message + RESET_SEQ
 
 logging.ColorFormatter = ColorFormatter
-

@@ -1,9 +1,12 @@
 #!/usr/bin/python3
+import subprocess
+import logging
+import glob
+
+logger = logging.getLogger('remote-jobs')
+
 import pprint
 from pprint import pprint as P
-import logging
-logger = logging.getLogger('remote-jobs')
-import subprocess
 
 class job(object):
     """
@@ -29,6 +32,7 @@ class job(object):
         self.local_mode=False
         self.type=None
         self.failed=False
+        self.hold=False
 
         if lhost == rhost:
             self.local_mode=True
@@ -78,21 +82,43 @@ class job(object):
         s2 = s1.format( user=self.luser )
         return s2
 
-class rsync_job(job):
+class remote_job_with_src_dest(job):
+    def __init__(self,
+        luser, ruser, lhost, rhost, lhome, rhome,
+        src=None, dest=None
+        ):
+        super().__init__(luser, ruser, lhost, rhost, lhome, rhome)
+
+        src=self.expand_vars(src, remote = False)
+        dest=self.expand_vars(dest, remote = True)
+        self.src=self.expand_glob(src)
+        self.dest=dest
+
+    def expand_glob(self, path):
+        logger.debug(path)
+        rv = glob.glob(path)
+        logger.debug(pprint.pformat(rv))
+        return rv
+
+class rsync_job(remote_job_with_src_dest):
     def __init__(self,
         luser, ruser, lhost, rhost, lhome, rhome,
         src=None, dest=None, flags=['-avh']
         ):
-        super().__init__(luser, ruser, lhost, rhost, lhome, rhome)
+        super().__init__(luser, ruser, lhost, rhost, lhome, rhome, src, dest)
         self.type="rsync"
-        self.src=self.expand_vars(src, remote = False)
-        self.dest=self.expand_vars(dest, remote = True)
         self.flags=flags
+
+        if not self.src:
+            logger.error("Source files could not be found: " + self.expand_vars(src))
+            logger.error(self.get_command_string())
+            self.hold=True
 
     def get_command(self):
         cmd  = [ 'rsync' ]
         cmd += self.flags
-        cmd += [ self.src, self.ruser + "@" + self.rhost + ":" + self.dest ]
+        cmd += self.src
+        cmd += [ self.ruser + "@" + self.rhost + ":" + self.dest ]
         return cmd
 
 def run_jobs(job_list):
@@ -104,10 +130,16 @@ def run_jobs(job_list):
         if j.rhost != host:
             host=j.rhost
             logger.debug("HOST: {host}".format(host=host))
-        j.execute()
 
-    print("The following jobs failed to execute:")
+        if not j.hold:
+            j.execute()
+
+    failed_jobs=[]
     for j in job_list:
         if j.failed:
-            print(j.get_command_string())
+            failed_jobs.append(j.get_command_string())
 
+    if failed_jobs:
+        print("The following jobs failed to execute:")
+        for j in failed_jobs:
+            print(j)

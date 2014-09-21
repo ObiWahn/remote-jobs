@@ -13,9 +13,9 @@ handler.setFormatter(
     )
 
 logger = logging.getLogger('remote-jobs')
-print(len(logger.handlers))
-logger.addHandler(handler)
 logger.setLevel(logging.INFO)
+#logger.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 logger.propagate=False
 
 

@@ -55,17 +55,20 @@ def get_job_info(default_dict, user_data_dict):
 
     return result
 
-
 def build_rsync_jobs(host, user, job_dict):
     """Creates job instances"""
-    logger.debug(job_dict)
+    logger.debug("job_dict:\n" + pprint.pformat(job_dict))
 
     jobs=[]
-
     for file_pair in job_dict['files']:
+        if job_dict['luser']:
+            luser = job_dict['luser']
+        else:
+            luser = user
+
         jobs.append(
             rsync_job(
-                luser = user, ruser = user,
+                luser = luser, ruser = user,
                 lhost = job_dict['lhost'], rhost = host,
                 lhome = job_dict['lhome'], rhome = job_dict['rhome'],
                 src   = file_pair[0],      dest = file_pair[1] ,
