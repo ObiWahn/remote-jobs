@@ -13,8 +13,10 @@ handler.setFormatter(
     )
 
 logger = logging.getLogger('remote-jobs')
+print(len(logger.handlers))
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
+logger.propagate=False
 
 
 if len(sys.argv) > 1:

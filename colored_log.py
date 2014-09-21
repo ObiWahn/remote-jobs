@@ -5,7 +5,7 @@ import logging
 
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
 
-DEFAULT_FMT =  ("[$BOLD%(name)-20s$RESET][%(levelname)-18s]  "
+DEFAULT_FMT =  ("[$BOLD%(name)-20s$RESET][$BOLD$COLOR%(levelname)-18s$RESET]  "
                 "%(message)s "
                 "($BOLD%(filename)s$RESET:%(lineno)d)")
 
