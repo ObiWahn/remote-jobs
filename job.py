@@ -179,20 +179,25 @@ def test_connection(j):
 
     return True
 
+def run_job(job, host=None, connection=None):
+    if job.rhost != host:
+        host=job.rhost
+        logger.debug("HOST: {host}".format(host=host))
+        connection=test_connection(job)
+
+    if not job.hold and ( connection or job.local):
+        job.execute()
+
+
 def run_jobs(job_list):
     """runs all jobs in a given list"""
     job_list.sort()
 
     host=None
     connection=False
-    for job in job_list:
-        if job.rhost != host:
-            host=job.rhost
-            logger.debug("HOST: {host}".format(host=host))
-            connection=test_connection(job)
 
-        if not job.hold and ( connection or job.local):
-            job.execute()
+    for job in job_list:
+        run_job(job, host, connection)
 
     failed_jobs=[]
     for job in job_list:
