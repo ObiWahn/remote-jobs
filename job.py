@@ -9,47 +9,38 @@ logger = logging.getLogger('remote-jobs')
 import pprint
 from pprint import pprint as P
 
-class RemoteJob(object):
-    """
-    Basic job
+class Job(object):
+    type_dict = {
+        None      : 0,
+        'rsync'   : 1,
+        'rdiff'   : 2,
+        'command' : 3
+    }
 
-    Most of our jobs will require information about
-    local and remote users!
-
-    If no local user is given it will default to the
-    remote ueser.
-    """
-    def __init__(self,
-        luser, ruser,
-        lhost, rhost,
-        lhome, rhome,
-        local
-        ):
+    def __init__(self, luser, lhost, lhome = None):
         self.luser=luser
-        self.ruser=ruser
-        self.lhost=rhost
-        self.rhost=rhost
+        self.lhost=lhost
         self.lhome=lhome
-        self.rhome=rhome
-        self.local=local
-        self.type=None
+        self.local=True
+        self.cmd_type=None
         self.failed=False
         self.hold=False
 
-        if lhost == rhost:
-            self.local=True
+    def map_cmd_to_prio(self):
+        if cmd_type:
+            return self.type_dict[self.cmd_type]
+        else:
+            return 0
 
-        if not luser:
-            self.luser=ruser
 
     def __lt__(self,other):
-        t1 = self.rhost, self.ruser
-        t2 = other.rhost, other.ruser
+        t1 = self.lhost , self.luser,  self.map_cmd_to_prio()
+        t2 = other.lhost, other.luser, other.map_cmd_to_prio()
         return t1 < t2
 
     def __eq__(self,other):
-        t1 = self.rhost, self.ruser
-        t2 = other.rhost, other.ruser
+        t1 = self.lhost , self.luser,  Job.type_dict[self.cmd_type]
+        t2 = other.lhost, other.luser, Job.type_dict[other.cmd_type]
         return t1 == t2
 
     def execute(self):
@@ -74,7 +65,8 @@ class RemoteJob(object):
         return " ".join(cmd)
 
     def get_command(self):
-        return ["not implemented"]
+        logger.error("get_command not implemented for: " + self.__class__.__name__)
+        return []
 
     def expand_vars(self, string, remote = False):
         """Expand Variables - Ugly Code - TODO"""
@@ -88,6 +80,41 @@ class RemoteJob(object):
         s1 = string.format( home=home, user=user )
         s2 = s1.format( user=self.luser )
         return s2
+
+class RemoteJob(Job):
+    """
+    Remote Job
+
+    """
+    def __init__(self,
+        luser, ruser,
+        lhost, rhost,
+        lhome = None, rhome = None,
+        local = False
+        ):
+
+        super().__init__(luser, lhost, lhome)
+
+        self.ruser=ruser
+        self.rhost=rhost
+        self.rhome=rhome
+        self.local=local
+
+        if lhost == rhost:
+            self.local=True
+
+        if not luser:
+            self.luser=ruser
+
+    def __lt__(self,other):
+        t1 = self.rhost,  self.ruser,  self.lhost,  self.luser,  Job.type_dict[self.cmd_type]
+        t2 = other.rhost, other.ruser, other.lhost, other.luser, Job.type_dict[other.cmd_type]
+        return t1 < t2
+
+    def __eq__(self,other):
+        t1 = self.rhost,  self.ruser,  self.lhost,  self.luser,  Job.type_dict[self.cmd_type]
+        t2 = other.rhost, other.ruser, other.lhost, other.luser, Job.type_dict[other.cmd_type]
+        return t1 == t2
 
 class RemoteJobSrcDest(RemoteJob):
     def __init__(self,
@@ -117,9 +144,9 @@ class RemoteJobRdiff(RemoteJobSrcDest):
             src=None, dest=None, glob=False, flags=['-v']
         ):
         super().__init__(
-            luser, ruser, lhost, rhost, lhome, rhome, local, 
+            luser, ruser, lhost, rhost, lhome, rhome, local,
             src, dest, glob)
-        self.type="rdiff"
+        self.cmd_type="rdiff"
         self.flags=flags
 
         if not self.src:
@@ -129,9 +156,9 @@ class RemoteJobRdiff(RemoteJobSrcDest):
 
     def get_command(self):
         if self.local:
-            cmd  = [ 'rsync' ]
+            cmd  = [ 'rdiff-backup' ]
         else:
-            cmd  = [ 'rsync' ]
+            cmd  = [ 'rdiff-backup' ]
         return cmd
 
 class RemoteJobRsync(RemoteJobSrcDest):
@@ -142,7 +169,7 @@ class RemoteJobRsync(RemoteJobSrcDest):
         super().__init__(
             luser, ruser, lhost, rhost, lhome, rhome, local,
             src, dest, glob)
-        self.type="rsync"
+        self.cmd_type="rsync"
         self.flags=flags
 
         if not self.src:
@@ -163,14 +190,15 @@ class RemoteJobRsync(RemoteJobSrcDest):
             cmd += [ self.ruser + "@" + self.rhost + ":" + self.dest ]
         return cmd
 
-def test_connection(j):
+
+def test_connection(job):
     cmd=None
-    if j.type in ['rsync']:
+    if job.cmd_type in ['rsync']:
         cmd=['ssh',
              '-o', 'ConnectionAttempts=1',
              '-o', 'ConnectTimeout=1',
-             j.ruser + '@' + j.rhost,
-             'echo' ,'Connected to ' + j.rhost
+             job.ruser + '@' + job.rhost,
+             'echo' ,'Connected to ' + job.rhost
             ]
 
     if cmd:
