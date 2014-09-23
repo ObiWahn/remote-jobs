@@ -81,7 +81,7 @@ def build_rsync_jobs(host, user, job_dict):
                 lhome = job_dict['lhome'], rhome = job_dict['rhome'],
                 local = job_dict['local'],
                 src   = file_pair[0],      dest = file_pair[1],
-                glob  = job_dict['glob'],
+                glob  = job_dict['glob'],  direction = "local2remote",
                 flags = job_dict['rsync_flags']
             )
         )
