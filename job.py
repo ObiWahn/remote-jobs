@@ -163,6 +163,7 @@ class RemoteJobRdiff(RemoteJobSrcDest):
             cmd += [ self.ruser + "@" + self.rhost + ":" + self.dest ]
         return cmd
 
+
 class RemoteJobRsync(RemoteJobSrcDest):
     def __init__(self,
             luser, ruser, lhost, rhost, lhome, rhome, local,
@@ -188,7 +189,6 @@ class RemoteJobRsync(RemoteJobSrcDest):
         return cmd
 
 
-
 def test_connection(job):
     cmd=None
     if job.local or 'DEBUG' in os.environ:
@@ -205,19 +205,24 @@ def test_connection(job):
             return False
     return True
 
+def run_job(job, host=None, connection=None):
+    if job.rhost != host:
+        host=job.rhost
+        logger.debug("HOST: {host}".format(host=host))
+        connection=test_connection(job)
+    if not job.hold and ( connection or job.local):
+        job.execute()
+
+
 def run_jobs(job_list):
     """runs all jobs in a given list"""
     job_list.sort()
 
     host=None
     connection=False
+
     for job in job_list:
-        if job.rhost != host:
-            host=job.rhost
-            logger.debug("HOST: {host}".format(host=host))
-            connection=test_connection(job)
-        if not job.hold and ( connection or job.local):
-            job.execute()
+        run_job(job, host, connection)
 
     failed_jobs=[]
     for job in job_list:
