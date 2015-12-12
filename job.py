@@ -189,7 +189,7 @@ class RemoteJobRsync(RemoteJobSrcDest):
         return cmd
 
 
-def test_connection(job):
+def connection_test(job):
     cmd=None
     if job.local or 'DEBUG' in os.environ:
         return True
@@ -209,7 +209,7 @@ def run_job(job, host=None, connection=None):
     if job.rhost != host:
         host=job.rhost
         logger.debug("HOST: {host}".format(host=host))
-        connection=test_connection(job)
+        connection=connection_test(job)
     if not job.hold and ( connection or job.local):
         job.execute()
 
