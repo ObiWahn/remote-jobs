@@ -1,0 +1,47 @@
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/hubert/.vimrc hubert@desktop:.vimrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/hubert/.bashrc hubert@desktop:.bashrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/hubert/.screenrc hubert@desktop:.screenrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/hubert/.tumxrc hubert@desktop:.tmuxrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress hubert/.vim/ hubert@desktop:.vim/
+job.py                      44 INFO     rsync -avhrlDp --delete --progress hubert/.bashrc.d/ hubert@desktop:.bashrc.d/
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/schubert/.vimrc schubert@desktop:.vimrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/schubert/.bashrc schubert@desktop:.bashrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/schubert/.screenrc schubert@desktop:.screenrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/schubert/.tumxrc schubert@desktop:.tmuxrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress schubert/.vim/ schubert@desktop:.vim/
+job.py                      44 INFO     rsync -avhrlDp --delete --progress schubert/.bashrc.d/ schubert@desktop:.bashrc.d/
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/schubert/foo schubert@desktop:/home/schubert_data
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/hubert/.vimrc hubert@laptop:.vimrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/hubert/.bashrc hubert@laptop:.bashrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/hubert/.screenrc hubert@laptop:.screenrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/hubert/.tumxrc hubert@laptop:.tmuxrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress hubert/.vim/ hubert@laptop:.vim/
+job.py                      44 INFO     rsync -avhrlDp --delete --progress hubert/.bashrc.d/ hubert@laptop:.bashrc.d/
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/schubert/.vimrc schubert@laptop:.vimrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/schubert/.bashrc schubert@laptop:.bashrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/schubert/.screenrc schubert@laptop:.screenrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/schubert/.tumxrc schubert@laptop:.tmuxrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress schubert/.vim/ schubert@laptop:.vim/
+job.py                      44 INFO     rsync -avhrlDp --delete --progress schubert/.bashrc.d/ schubert@laptop:.bashrc.d/
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/schubert/foo schubert@laptop:/home/schubert_data
+job.py                      44 INFO     rsync -avh /home/mario/.vimrc mario@selfschuld.de:.vimrc
+job.py                      44 INFO     rsync -avh /home/mario/.bashrc mario@selfschuld.de:.bashrc
+job.py                      44 INFO     rsync -avh /home/mario/.screenrc mario@selfschuld.de:.screenrc
+job.py                      44 INFO     rsync -avh /home/mario/.tumxrc mario@selfschuld.de:.tmuxrc
+job.py                      44 INFO     rsync -avh /home/wario/.vimrc wario@selfschuld.de:.vimrc
+job.py                      44 INFO     rsync -avh /home/wario/.bashrc wario@selfschuld.de:.bashrc
+job.py                      44 INFO     rsync -avh /home/wario/.screenrc wario@selfschuld.de:.screenrc
+job.py                      44 INFO     rsync -avh /home/wario/.tumxrc wario@selfschuld.de:.tmuxrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/hubert/.vimrc hubert@server:.vimrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/hubert/.bashrc hubert@server:.bashrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/hubert/.screenrc hubert@server:.screenrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/hubert/.tumxrc hubert@server:.tmuxrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress hubert/.vim/ hubert@server:.vim/
+job.py                      44 INFO     rsync -avhrlDp --delete --progress hubert/.bashrc.d/ hubert@server:.bashrc.d/
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/schubert/.vimrc schubert@server:.vimrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/schubert/.bashrc schubert@server:.bashrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/schubert/.screenrc schubert@server:.screenrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/schubert/.tumxrc schubert@server:.tmuxrc
+job.py                      44 INFO     rsync -avhrlDp --delete --progress schubert/.vim/ schubert@server:.vim/
+job.py                      44 INFO     rsync -avhrlDp --delete --progress schubert/.bashrc.d/ schubert@server:.bashrc.d/
+job.py                      44 INFO     rsync -avhrlDp --delete --progress /home/schubert/foo schubert@server:/home/schubert_data

@@ -29,9 +29,41 @@ def test_create_jobs():
 
 @pytest.fixture
 def simple_jobs(request):
+    logger = logging.getLogger('remote-jobs')
+    logger.setLevel(logging.INFO) # need to set level here
     file_name = join(FIXTURE_DIRECTORY, "test.yaml")
     with open(file_name, "r") as f:
         return create_jobs(yaml.safe_load(f))
 
-def test_run_job(simple_jobs):
+
+def test_run_job(caplog, simple_jobs):
+    caplog.set_level(logging.INFO)
+
+    ##TODO "command order is not fix - compare sets of records"
     run_jobs(simple_jobs)
+    resout = caplog.text()
+
+    file_name = join(FIXTURE_DIRECTORY, "test.log")
+    with open(file_name, "r") as f:
+        assert resout == f.read()
+
+
+
+## UNUSED EXAMPLE CODE
+
+# def test_run_job(capfd, simple_jobs):
+#     run_jobs(simple_jobs)
+#     resout, reserr = capfd.readouterr()
+#     assert resout == "df"
+#     assert reserr == "df"
+
+# def test_run_job(caplog, simple_jobs):
+#     #caplog.set_level(logging.INFO)   #why does this not work
+#     #caplog.at_level(logging.INFO)
+#     run_jobs(simple_jobs)
+#     for logger_, level_, message_ in caplog.record_tuples():
+#         if level_ == logging.INFO:
+#             pass
+#             #assert "" == logger_
+#     resout = caplog.text()
+#     assert resout == "df"
