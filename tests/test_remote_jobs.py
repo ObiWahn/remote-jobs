@@ -39,13 +39,12 @@ def simple_jobs(request):
 def test_run_job(caplog, simple_jobs):
     caplog.set_level(logging.INFO)
 
-    ##TODO "command order is not fix - compare sets of records"
     run_jobs(simple_jobs)
     resout = caplog.text()
 
     file_name = join(FIXTURE_DIRECTORY, "test.log")
     with open(file_name, "r") as f:
-        assert resout == f.read()
+        assert set(resout.splitlines()) == set(f.read().splitlines())
 
 
 
