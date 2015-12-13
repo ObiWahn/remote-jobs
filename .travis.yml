@@ -1,0 +1,11 @@
+language: python
+python:
+  - "3.3"
+  - "3.4"
+# command to install dependencies
+install:
+  - pip install --upgrade pip
+  - pip install pytest-catchlog pyyaml
+# command to run tests
+script: "py.test -vv ."
+
